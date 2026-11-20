@@ -1,4 +1,17 @@
-# Dustpan
+<div align="center">
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f2027,50:203a43,100:2c5364&height=170&section=header&text=Dustpan&fontSize=52&fontColor=ffffff&fontAlignY=36&desc=Rule-based%20Downloads%20tidying%20for%20macOS%2C%20with%20undo&descAlignY=58&descSize=16" alt="Dustpan" width="100%" />
+
+<p>
+  <img src="https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go" />
+  <img src="https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="macOS" />
+  <a href="https://github.com/nsawill1405/dustpan/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/nsawill1405/dustpan/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white" alt="CI" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-2c5364?style=for-the-badge" alt="License" /></a>
+</p>
+
+<p><a href="#start-here">Start here</a> · <a href="#default-rules">Default rules</a> · <a href="#undo-and-safety">Undo and safety</a> · <a href="#development">Development</a> · <a href="#license">License</a></p>
+
+</div>
 
 Dustpan tidies your Mac’s Downloads folder with rules you control. Preview first, sort once, or let it run at login. It doesn’t delete or overwrite your files, and you can undo a batch.
 
@@ -72,3 +85,17 @@ Use `--downloads DIR` to try Dustpan on a scratch folder. Use the same folder fo
 ## Development
 
 Run `go test -race ./...` and `go vet ./...`. CI tests on macOS and Linux; version tags build archives and checksums for both Mac architectures. The login agent is macOS-only.
+
+## License
+
+[MIT](LICENSE) © William North. Issues and pull requests are welcome.
+
+---
+
+<div align="center">
+
+<sub>Made by <a href="https://github.com/nsawill1405">William North</a> · <a href="https://nsawill.co.uk">nsawill.co.uk</a></sub>
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:2c5364,50:203a43,100:0f2027&height=100&section=footer" alt="" width="100%" />
+
+</div>
