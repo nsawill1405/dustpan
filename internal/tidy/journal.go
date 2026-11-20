@@ -138,6 +138,14 @@ func syncJournalParents(dir string) error {
 	}
 	for {
 		parent := filepath.Dir(dir)
+		// An unwritable ancestor cannot contain a directory entry created by Dustpan.
+		err := unix.Faccessat(unix.AT_FDCWD, parent, unix.W_OK, unix.AT_EACCESS)
+		if errors.Is(err, fs.ErrPermission) || errors.Is(err, unix.EROFS) {
+			return nil
+		}
+		if err != nil {
+			return fmt.Errorf("check journal parent %q: %w", parent, err)
+		}
 		if err := syncDirectoryPath(parent); err != nil {
 			return fmt.Errorf("sync journal parent %q: %w", parent, err)
 		}

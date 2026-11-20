@@ -139,6 +139,28 @@ func TestMoveAndUndoDoNotOverwrite(t *testing.T) {
 	present(t, e.Downloads, "report (2).pdf", "incoming")
 }
 
+func TestFirstSortUnderTraverseOnlyAncestor(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root can read a traverse-only directory")
+	}
+	e, r := fixture(t)
+	ancestor := t.TempDir()
+	writable := filepath.Join(ancestor, "writable")
+	if err := os.Mkdir(writable, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chmod(ancestor, 0111); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.Chmod(ancestor, 0700) })
+	e.StateDir = filepath.Join(writable, "new", "state")
+	add(t, e.Downloads, "sample.pdf", "sample", testNow.Add(-time.Hour))
+	if err := e.Sort(r, testNow, false, io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	present(t, e.Downloads, "Documents/sample.pdf", "sample")
+}
+
 func TestUndoBatchAndLocalDay(t *testing.T) {
 	e, r := fixture(t)
 	local := time.FixedZone("UTC+8", 8*3600)
