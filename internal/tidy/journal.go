@@ -119,12 +119,33 @@ func WriteAtomic(name string, data []byte, mode fs.FileMode) error {
 	if err := os.Rename(f.Name(), name); err != nil {
 		return err
 	}
-	d, err := os.Open(dir)
+	return syncDirectoryPath(dir)
+}
+
+func syncDirectoryPath(name string) error {
+	d, err := os.Open(name)
 	if err != nil {
 		return err
 	}
 	defer d.Close()
 	return syncDir(int(d.Fd()))
+}
+
+func syncJournalParents(dir string) error {
+	dir, err := filepath.EvalSymlinks(dir)
+	if err != nil {
+		return err
+	}
+	for {
+		parent := filepath.Dir(dir)
+		if err := syncDirectoryPath(parent); err != nil {
+			return fmt.Errorf("sync journal parent %q: %w", parent, err)
+		}
+		if parent == dir || filepath.Dir(parent) == parent {
+			return nil
+		}
+		dir = parent
+	}
 }
 
 func matches(root int, name string, id fingerprint) (bool, error) {

@@ -15,7 +15,7 @@ var testNow = time.Date(2026, 10, 15, 12, 0, 0, 0, time.Local)
 
 func fixture(t *testing.T) (Engine, Rules) {
 	t.Helper()
-	e := Engine{Downloads: t.TempDir(), StateDir: filepath.Join(t.TempDir(), "state")}
+	e := Engine{Downloads: t.TempDir(), StateDir: filepath.Join(t.TempDir(), "new", "nested", "state")}
 	r, err := LoadRules("")
 	if err != nil {
 		t.Fatal(err)

@@ -113,6 +113,11 @@ func (e Engine) Sort(rules Rules, now time.Time, dryRun bool, out io.Writer) err
 		}
 	}
 	items, scanErr := scan(dir, log, rules, now, largeFile)
+	if !dryRun && len(log) == 0 && len(items) > 0 {
+		if err := syncJournalParents(journal); err != nil {
+			return err
+		}
+	}
 	if dryRun && len(items) == 0 && scanErr == nil {
 		fmt.Fprintln(out, "Nothing to move.")
 	}
