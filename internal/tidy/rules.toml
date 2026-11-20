@@ -1,0 +1,21 @@
+# Dustpan reads only the top level of Downloads. Paths below are relative to it.
+# Use 0 for age_days or large_bytes to turn off that rule.
+quiet_for = "5m"
+age_days = 30
+large_bytes = 1000000000
+
+[[rules]]
+extensions = ["jpg", "jpeg", "png", "gif", "heic", "webp", "svg", "tif", "tiff", "avif", "bmp"]
+folder = "Images"
+
+[[rules]]
+extensions = ["pdf", "doc", "docx", "rtf", "txt", "odt", "xls", "xlsx", "csv", "ppt", "pptx"]
+folder = "Documents"
+
+[[rules]]
+extensions = ["zip", "gz", "tar", "bz2", "xz", "7z", "rar", "tgz"]
+folder = "Archives"
+
+[[rules]]
+extensions = ["dmg", "pkg"]
+folder = "Installers"
