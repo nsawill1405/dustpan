@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 )
 
 var testNow = time.Date(2026, 10, 15, 12, 0, 0, 0, time.Local)
@@ -161,6 +162,37 @@ func TestUndoBatchAndLocalDay(t *testing.T) {
 	present(t, e.Downloads, "today1.pdf", "today1.pdf")
 	present(t, e.Downloads, "today2.pdf", "today2.pdf")
 	present(t, e.Downloads, "Documents/yesterday.pdf", "yesterday.pdf")
+}
+
+func TestLongNameCollisions(t *testing.T) {
+	e, r := fixture(t)
+	old := testNow.Add(-time.Hour)
+	name := strings.Repeat("x", 248) + ".pdf"
+	numbered := strings.Repeat("x", 247) + " (2).pdf"
+	add(t, e.Downloads, name, "incoming", old)
+	add(t, e.Downloads, "Documents/"+name, "existing", old)
+	var plan bytes.Buffer
+	if err := e.Sort(r, testNow, true, &plan); err != nil || !strings.Contains(plan.String(), numbered) {
+		t.Fatalf("expected a numbered filename in preview, got %q (%v)", plan.String(), err)
+	}
+	if err := e.Sort(r, testNow, false, io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	present(t, e.Downloads, "Documents/"+name, "existing")
+	present(t, e.Downloads, "Documents/"+numbered, "incoming")
+	add(t, e.Downloads, name, "new download", testNow)
+	if err := e.Undo(testNow, false, io.Discard); err != nil {
+		t.Fatal(err)
+	}
+	present(t, e.Downloads, name, "new download")
+	present(t, e.Downloads, numbered, "incoming")
+}
+
+func TestNumberedNameKeepsUTF8Intact(t *testing.T) {
+	name := numberedName(strings.Repeat("é", 125)+".pdf", 2)
+	if len(name) > 255 || !utf8.ValidString(name) || !strings.HasSuffix(name, " (2).pdf") {
+		t.Fatalf("invalid numbered filename: %q", name)
+	}
 }
 
 func TestSkipsSymlinkFoldersAndChangedUndoFiles(t *testing.T) {

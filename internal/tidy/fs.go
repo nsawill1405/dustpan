@@ -8,6 +8,7 @@ import (
 	"path"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"golang.org/x/sys/unix"
 )
@@ -110,11 +111,10 @@ func available(root int, preferred string, reserved map[string]bool) (string, er
 	if err == nil {
 		defer unix.Close(fd)
 	}
-	ext := path.Ext(base)
 	for i := 1; ; i++ {
 		name := base
 		if i > 1 {
-			name = fmt.Sprintf("%s (%d)%s", strings.TrimSuffix(base, ext), i, ext)
+			name = numberedName(base, i)
 		}
 		candidate := path.Join(dir, name)
 		if reserved[candidate] {
@@ -129,6 +129,23 @@ func available(root int, preferred string, reserved map[string]bool) (string, er
 			return "", err
 		}
 	}
+}
+
+func numberedName(name string, n int) string {
+	const maxBytes = 255
+	suffix := fmt.Sprintf(" (%d)", n)
+	ext := path.Ext(name)
+	stem := strings.TrimSuffix(name, ext)
+	if len(suffix)+len(ext) >= maxBytes {
+		stem, ext = name, ""
+	}
+	if limit := maxBytes - len(suffix) - len(ext); len(stem) > limit {
+		for !utf8.RuneStart(stem[limit]) {
+			limit--
+		}
+		stem = stem[:limit]
+	}
+	return stem + suffix + ext
 }
 
 func renameChecked(root int, from, to string, id fingerprint, quietBefore time.Time) error {
