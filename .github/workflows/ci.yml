@@ -23,6 +23,35 @@ jobs:
       - run: go test -race ./...
       - run: go vet ./...
       - run: test -z "$(gofmt -l .)"
+      - name: Exercise the macOS login agent
+        if: runner.os == 'macOS'
+        run: |
+          if ! launchctl print "gui/$(id -u)" > /dev/null 2>&1; then
+            echo "::warning::No macOS login session; skipping launch-agent smoke test."
+            exit 0
+          fi
+          export HOME="$(mktemp -d)"
+          bin="$HOME/dustpan"
+          go build -o "$bin" .
+          trap '"$bin" uninstall || true' EXIT
+          mkdir -p "$HOME/Downloads" "$HOME/.config/dustpan"
+          printf 'quiet_for = "1s"\nage_days = 0\n' > "$HOME/.config/dustpan/rules.toml"
+          printf 'sample\n' > "$HOME/Downloads/sample.pdf.part"
+          "$bin" install
+          "$bin" status | grep 'Login agent: loaded'
+          mv "$HOME/Downloads/sample.pdf.part" "$HOME/Downloads/sample.pdf"
+          for attempt in {1..30}; do
+            if test -f "$HOME/Downloads/Documents/sample.pdf"; then break; fi
+            sleep 2
+          done
+          if ! test -f "$HOME/Downloads/Documents/sample.pdf"; then
+            cat "$HOME/Library/Application Support/Dustpan"/watch*.log
+            exit 1
+          fi
+          "$bin" undo
+          grep -x sample "$HOME/Downloads/sample.pdf"
+          "$bin" uninstall
+          "$bin" status | grep 'Login agent: not loaded'
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
